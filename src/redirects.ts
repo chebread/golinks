@@ -6,5 +6,6 @@
  */
 export const redirects: Record<string, string> = {
 	github: "https://github.com/chebread",
-	blog: "https://chebread.org",
+  blog: "https://chebread.org",
+	email: "mailto:che@chebread.org",
 };
