@@ -3,7 +3,8 @@
 		"target": "es2024",
 		"lib": [
 			"es2024",
-			"webworker"
+			"webworker",
+			"webworker.iterable"
 		],
 		"module": "preserve",
 		"moduleResolution": "bundler",

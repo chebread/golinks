@@ -1,8 +1,21 @@
 import { redirects } from "./redirects";
+import { handleQrRequest } from "./qr";
 
 export default {
 	async fetch(request: Request): Promise<Response> {
 		const url = new URL(request.url);
+
+		const lowerPath = url.pathname.toLowerCase();
+
+		// /qr 또는 /qr/ 또는 /qr/<foo> 경로 처리 (대소문자 무관)
+		if (lowerPath === "/qr" || lowerPath === "/qr/") {
+			return handleQrRequest(request, "");
+		}
+
+		if (lowerPath.startsWith("/qr/")) {
+			const rawTarget = url.pathname.slice(4);
+			return handleQrRequest(request, rawTarget);
+		}
 
 		// 경로에서 앞뒤 슬래시(/)를 제거하고 소문자로 정규화 (예: "/github/" -> "github")
 		const slug = url.pathname.replace(/^\/+|\/+$/g, "").toLowerCase();
