@@ -11,8 +11,8 @@
 ## Features
 
 - **Dual Subdomain Architecture**:
-  - `link.chebread.org`: Instant 302 redirects for vanity slugs (e.g. `/github`, `/blog`), with `/qr/...` route support.
-  - `qr.chebread.org`: Dedicated subdomain for instant QR generation directly from path (e.g. `/github`, `/hello`, `/https://...`) without requiring `/qr/` prefix.
+  - `link.chebread.org`: Instant 302 redirects for vanity slugs (e.g. `/github`, `/blog`).
+  - `qr.chebread.org`: Dedicated subdomain for instant QR generation directly from path (e.g. `/github`, `/hello`, `/https://...`).
 - **Dynamic QR Code Generation**:
   - Automatically renders an ASCII/Unicode compact QR code in CLI terminals.
   - Automatically delivers an optimized, scalable vector SVG download in web browsers.
@@ -32,14 +32,12 @@
 | | | `https://qr.chebread.org/hello` | Renders/downloads QR code for text `"hello"` |
 | | | `https://qr.chebread.org/https://example.com` | Renders/downloads QR code for URL `"https://example.com"` |
 | | | `https://qr.chebread.org/?url=...` | Renders/downloads QR code from query parameter |
-| | | `https://qr.chebread.org/qr/github` | Gracefully handled (same as `/github`) |
 | **`link.chebread.org`** | **Go-Links (URL Redirection)** | `https://link.chebread.org/github` | 302 Redirect to `https://github.com/chebread` |
 | | | `https://link.chebread.org/` | 302 Redirect to `https://chebread.org` |
-| | | `https://link.chebread.org/qr/<target>` | Renders/downloads QR code for `<target>` |
 
 ---
 
-## 2. Shortlink Redirection (Go-Links)
+## 2. Shortlink Redirection (`link.chebread.org`)
 
 ### Configuration
 Add your custom slug and target URL in [`src/redirects.ts`](src/redirects.ts):
@@ -57,37 +55,24 @@ export const redirects: Record<string, string> = {
 };
 ```
 
-### Behavior (`link.chebread.org`)
+### Behavior
 - `https://link.chebread.org/<slug>`: 302 redirects to the destination URL.
 - Paths are case-insensitive and trim slashes (e.g. `/GITHUB/` -> `https://github.com/chebread`).
 - Unmatched slugs or root `/` redirect to `https://chebread.org`.
-- Requests prefixed with `/qr` or `/qr/...` generate QR codes instead of redirecting.
 
 ---
 
-## 3. Dynamic QR Code Service
+## 3. Dynamic QR Code Service (`qr.chebread.org`)
 
 ### Routing Options
-
-On **`qr.chebread.org`** (recommended for QR):
 
 | Format | Example | Description |
 | :--- | :--- | :--- |
 | `/<slug>` | `https://qr.chebread.org/github` | Encodes destination URL mapped in `redirects.ts`. |
 | `/<url>` | `https://qr.chebread.org/https://chebread.org` | Encodes the specified target URL directly. |
-| `/<text>` | `https://qr.chebread.org/hello-world` | Encodes arbitrary text or payloads (e.g. Wi-Fi config). |
+| `/<text>` | `https://qr.chebread.org/hello-world` | Encodes arbitrary text or payloads. |
 | `/?url=<target>` | `https://qr.chebread.org/?url=https://example.com?foo=1` | Safe query parameter for complex URLs. |
-| `/?text=<raw>` | `https://qr.chebread.org/?text=Contact:+12345678` | Safe query parameter for arbitrary raw text. |
-| `/qr/<target>` | `https://qr.chebread.org/qr/github` | Gracefully handled without duplication. |
-
-On **`link.chebread.org`**:
-
-| Format | Example | Description |
-| :--- | :--- | :--- |
-| `/qr/<slug>` | `https://link.chebread.org/qr/github` | Encodes destination URL mapped in `redirects.ts`. |
-| `/qr/<url>` | `https://link.chebread.org/qr/https://chebread.org` | Encodes the specified target URL directly. |
-| `/qr/<text>` | `https://link.chebread.org/qr/hello-world` | Encodes arbitrary text or payloads. |
-| `/qr?url=<target>`| `https://link.chebread.org/qr?url=https://example.com` | Safe query parameter for complex URLs. |
+| `/?text=<raw>` | `https://qr.chebread.org/?text=github` | Explicit raw text parameter (skips slug redirect lookup). |
 
 ### Query Parameters
 
@@ -119,11 +104,6 @@ curl -sL https://qr.chebread.org/hello-world
 curl -sL https://qr.chebread.org/https://chebread.org
 ```
 
-#### Render QR on `link.chebread.org`:
-```bash
-curl -sL https://link.chebread.org/qr/github
-```
-
 #### Render QR for light-background terminals:
 ```bash
 curl -sL "https://qr.chebread.org/github?light"
@@ -153,7 +133,7 @@ When visited from a standard web browser (Chrome, Safari, Firefox), the service 
 - **Instant Download via `qr.chebread.org`**:
   - `https://qr.chebread.org/github` triggers download of `qr-github.svg`.
   - `https://qr.chebread.org/hello` triggers download of `qr-hello.svg`.
-- **Clean File Naming**: `/github` or `/qr/github` triggers download of `qr-github.svg`.
+- **Clean File Naming**: `/github` triggers download of `qr-github.svg`.
 - **Sanitized Filenames**: Paths and unsafe characters are stripped into safe tokens (e.g. `/https://example.com` becomes `qr-https_example.com.svg`).
 - **Unicode Support (RFC 5987)**: Multi-byte languages (such as Korean) download with their original name preserved via `filename*=UTF-8''...` (e.g. `/안녕하세요` -> `qr-안녕하세요.svg`).
 

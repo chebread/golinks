@@ -6,37 +6,29 @@ export default {
 		const url = new URL(request.url);
 
 		const hostname = url.hostname.toLowerCase().replace(/\.$/, "");
-		// Remove leading slashes: "/github" -> "github", "//qr/github" -> "qr/github"
+		// Remove leading slashes: "/github" -> "github"
 		const cleanPath = url.pathname.replace(/^\/+/, "");
-		const lowerClean = cleanPath.toLowerCase();
 
-		// qr.chebread.org: 전용 QR 코드 생성 도메인
+		// 1. qr.chebread.org: 전용 QR 코드 생성 도메인
 		if (hostname === "qr.chebread.org") {
-			let rawTarget: string;
-			if (lowerClean === "qr" || lowerClean.startsWith("qr/")) {
-				rawTarget = lowerClean === "qr" ? "" : cleanPath.slice(2).replace(/^\/+/, "");
-			} else {
-				rawTarget = cleanPath;
+			return handleQrRequest(request, cleanPath);
+		}
+
+		// 2. link.chebread.org: 순수 단축 링크 리다이렉트 전용
+		if (hostname === "link.chebread.org") {
+			// 경로에서 앞뒤 슬래시(/)를 제거하고 소문자로 정규화 (예: "/github/" -> "github")
+			const slug = cleanPath.replace(/\/+$/g, "").toLowerCase();
+
+			// 프로토타입 속성(toString 등) 오염 방지: 실제 등록된 단축키인지 안전하게 검사
+			if (Object.hasOwn(redirects, slug)) {
+				return Response.redirect(redirects[slug], 302);
 			}
-			return handleQrRequest(request, rawTarget);
+
+			// 매칭되는 링크가 없거나 루트(/) 요청 시 메인 블로그로 이동
+			return Response.redirect("https://chebread.org", 302);
 		}
 
-		// link.chebread.org (또는 로컬/기타 호스트명):
-		// /qr 또는 /qr/ 또는 /qr/<foo> 경로 처리 (대소문자 무관, 다중 선행 슬래시 허용)
-		if (lowerClean === "qr" || lowerClean.startsWith("qr/")) {
-			const rawTarget = lowerClean === "qr" ? "" : cleanPath.slice(2).replace(/^\/+/, "");
-			return handleQrRequest(request, rawTarget);
-		}
-
-		// 경로에서 앞뒤 슬래시(/)를 제거하고 소문자로 정규화 (예: "/github/" -> "github")
-		const slug = cleanPath.replace(/\/+$/g, "").toLowerCase();
-
-		// 일치하는 단축 슬러그가 있는 경우 해당 목적지로 리다이렉트 (302)
-		if (slug in redirects) {
-			return Response.redirect(redirects[slug], 302);
-		}
-
-		// 매칭되는 링크가 없거나 루트(/) 요청 시 메인 블로그로 이동
-		return Response.redirect("https://chebread.org", 302);
+		// 3. 인가되지 않은 미등록 호스트명(예: a.chebread.org, 임의의 Host 헤더 등) 차단
+		return new Response("Not Found", { status: 404 });
 	},
 };

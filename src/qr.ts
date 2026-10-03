@@ -178,7 +178,11 @@ export function resolveQrTarget(
 
 	// If <foo> matches a slug in redirects, encode the destination target URL
 	// (Unless explicitly requested as raw text via ?text=)
-	if (!isExplicitRawText && normalizedSlug && normalizedSlug in redirects) {
+	if (
+		!isExplicitRawText &&
+		normalizedSlug &&
+		Object.hasOwn(redirects, normalizedSlug)
+	) {
 		return {
 			textToEncode: redirects[normalizedSlug],
 			filenameSlug: normalizedSlug,
