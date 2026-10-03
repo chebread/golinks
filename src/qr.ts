@@ -137,23 +137,30 @@ export function resolveQrTarget(
 	let target = rawTarget.trim();
 
 	let usedQueryFallback = false;
+	let isExplicitRawText = false;
 	// If rawTarget is empty or contains only slashes, check query params for fallback
 	const stripped = target.replace(/^\/+|\/+$/g, "");
 	if (!stripped) {
-		const queryFallback =
-			searchParams.get("url") ||
-			searchParams.get("text") ||
-			searchParams.get("target") ||
-			searchParams.get("q") ||
-			"";
-		target = queryFallback.trim();
-		if (!target) {
-			return {
-				textToEncode: "",
-				filenameSlug: "code",
-			};
+		const rawTextParam = searchParams.get("text");
+		if (rawTextParam != null && rawTextParam.trim() !== "") {
+			target = rawTextParam.trim();
+			isExplicitRawText = true;
+			usedQueryFallback = true;
+		} else {
+			const queryFallback =
+				searchParams.get("url") ||
+				searchParams.get("target") ||
+				searchParams.get("q") ||
+				"";
+			target = queryFallback.trim();
+			if (!target) {
+				return {
+					textToEncode: "",
+					filenameSlug: "code",
+				};
+			}
+			usedQueryFallback = true;
 		}
-		usedQueryFallback = true;
 	}
 
 	// Attempt URL decoding for path-based targets (queryFallback is already decoded by searchParams.get)
@@ -170,7 +177,8 @@ export function resolveQrTarget(
 	const normalizedSlug = decodedTarget.replace(/^\/+|\/+$/g, "").toLowerCase();
 
 	// If <foo> matches a slug in redirects, encode the destination target URL
-	if (normalizedSlug && normalizedSlug in redirects) {
+	// (Unless explicitly requested as raw text via ?text=)
+	if (!isExplicitRawText && normalizedSlug && normalizedSlug in redirects) {
 		return {
 			textToEncode: redirects[normalizedSlug],
 			filenameSlug: normalizedSlug,
@@ -235,8 +243,11 @@ export function handleQrRequest(
 
 	// Handle empty <foo> or targets consisting only of slashes/whitespace
 	if (!textToEncode.trim()) {
+		const isQrHost =
+			url.hostname.toLowerCase().replace(/\.$/, "") === "qr.chebread.org";
+		const prefix = isQrHost ? "" : "/qr";
 		return new Response(
-			"Missing content for QR code.\n\nUsage: /qr/<slug or text or url>\nExamples:\n  /qr/github\n  /qr/https://chebread.org\n  /qr/hello-world\n",
+			`Missing content for QR code.\n\nUsage: ${prefix}/<slug or text or url>\nExamples:\n  ${prefix}/github\n  ${prefix}/https://chebread.org\n  ${prefix}/hello-world\n`,
 			{
 				status: 400,
 				headers: {

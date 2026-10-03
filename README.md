@@ -4,11 +4,13 @@
 
 ## Features
 
-- **Lightning-Fast Go-Links**: Instant 302 redirects for vanity slugs (e.g. `/github`, `/blog`).
-- **Dynamic QR Code Generation (`/qr`)**:
+- **Dual Subdomain Architecture**:
+  - `link.chebread.org`: Instant 302 redirects for vanity slugs (e.g. `/github`, `/blog`), with `/qr/...` route support.
+  - `qr.chebread.org`: Dedicated subdomain for instant QR generation directly from path (e.g. `/github`, `/hello`, `/https://...`) without requiring `/qr/` prefix.
+- **Dynamic QR Code Generation**:
   - Automatically renders an ASCII/Unicode compact QR code in CLI terminals.
   - Automatically delivers an optimized, scalable vector SVG download in web browsers.
-- **Intelligent Routing**: Supports vanity slugs (`/qr/github`), full URLs (`/qr/https://...`), and arbitrary text (`/qr/hello`).
+- **Intelligent Routing**: Supports vanity slugs (`/github`), full URLs (`/https://...`), and arbitrary text (`/hello`).
 - **Safe Query Fallback**: Use `?url=` or `?text=` to encode complex strings without path-mangling or URL-encoding conflicts.
 - **Terminal Theme Awareness**: Support for dark and light terminal backgrounds (`?light` / `?invert`).
 - **Standard-Compliant Content-Disposition**: Full RFC 6266 and RFC 5987 (`filename*=UTF-8''...`) support with strict ByteString sanitization for multi-byte Unicode/Korean filenames.
@@ -16,7 +18,22 @@
 
 ---
 
-## 1. Shortlink Redirection (Go-Links)
+## 1. Subdomain Overview
+
+| Subdomain | Purpose | Path Example | Result |
+| :--- | :--- | :--- | :--- |
+| **`qr.chebread.org`** | **Instant QR Code Generation** | `https://qr.chebread.org/github` | Renders/downloads QR code for `https://github.com/chebread` |
+| | | `https://qr.chebread.org/hello` | Renders/downloads QR code for text `"hello"` |
+| | | `https://qr.chebread.org/https://example.com` | Renders/downloads QR code for URL `"https://example.com"` |
+| | | `https://qr.chebread.org/?url=...` | Renders/downloads QR code from query parameter |
+| | | `https://qr.chebread.org/qr/github` | Gracefully handled (same as `/github`) |
+| **`link.chebread.org`** | **Go-Links (URL Redirection)** | `https://link.chebread.org/github` | 302 Redirect to `https://github.com/chebread` |
+| | | `https://link.chebread.org/` | 302 Redirect to `https://chebread.org` |
+| | | `https://link.chebread.org/qr/<target>` | Renders/downloads QR code for `<target>` |
+
+---
+
+## 2. Shortlink Redirection (Go-Links)
 
 ### Configuration
 Add your custom slug and target URL in [`src/redirects.ts`](src/redirects.ts):
@@ -34,24 +51,37 @@ export const redirects: Record<string, string> = {
 };
 ```
 
-### Behavior
+### Behavior (`link.chebread.org`)
 - `https://link.chebread.org/<slug>`: 302 redirects to the destination URL.
 - Paths are case-insensitive and trim slashes (e.g. `/GITHUB/` -> `https://github.com/chebread`).
 - Unmatched slugs or root `/` redirect to `https://chebread.org`.
+- Requests prefixed with `/qr` or `/qr/...` generate QR codes instead of redirecting.
 
 ---
 
-## 2. Dynamic QR Code Service (`/qr`)
+## 3. Dynamic QR Code Service
 
 ### Routing Options
 
+On **`qr.chebread.org`** (recommended for QR):
+
 | Format | Example | Description |
 | :--- | :--- | :--- |
-| `/qr/<slug>` | `/qr/github` | Encodes the destination URL mapped to the slug in `redirects.ts`. |
-| `/qr/<url>` | `/qr/https://chebread.org` | Encodes the specified target URL directly. |
-| `/qr/<text>` | `/qr/hello-world` | Encodes arbitrary text or payloads (e.g., Wi-Fi configurations). |
-| `/qr?url=<target>` | `/qr?url=https://example.com?foo=1&bar=2` | Safe query parameter for URLs containing queries or hashes. |
-| `/qr?text=<raw>` | `/qr?text=Contact:+12345678` | Safe query parameter for arbitrary raw or multi-line text. |
+| `/<slug>` | `https://qr.chebread.org/github` | Encodes destination URL mapped in `redirects.ts`. |
+| `/<url>` | `https://qr.chebread.org/https://chebread.org` | Encodes the specified target URL directly. |
+| `/<text>` | `https://qr.chebread.org/hello-world` | Encodes arbitrary text or payloads (e.g. Wi-Fi config). |
+| `/?url=<target>` | `https://qr.chebread.org/?url=https://example.com?foo=1` | Safe query parameter for complex URLs. |
+| `/?text=<raw>` | `https://qr.chebread.org/?text=Contact:+12345678` | Safe query parameter for arbitrary raw text. |
+| `/qr/<target>` | `https://qr.chebread.org/qr/github` | Gracefully handled without duplication. |
+
+On **`link.chebread.org`**:
+
+| Format | Example | Description |
+| :--- | :--- | :--- |
+| `/qr/<slug>` | `https://link.chebread.org/qr/github` | Encodes destination URL mapped in `redirects.ts`. |
+| `/qr/<url>` | `https://link.chebread.org/qr/https://chebread.org` | Encodes the specified target URL directly. |
+| `/qr/<text>` | `https://link.chebread.org/qr/hello-world` | Encodes arbitrary text or payloads. |
+| `/qr?url=<target>`| `https://link.chebread.org/qr?url=https://example.com` | Safe query parameter for complex URLs. |
 
 ### Query Parameters
 
@@ -65,55 +95,65 @@ export const redirects: Record<string, string> = {
 
 ---
 
-## 3. CLI & Terminal Usage
+## 4. CLI & Terminal Usage
 
 When requested via `curl`, `wget`, `httpie`, `xh`, or `powershell` (or with `Accept: text/plain`), the worker outputs a 2-in-1 Unicode half-block QR code directly into stdout.
 
 ### Examples
 
-#### Render QR for a saved redirect slug:
+#### Render QR on dedicated domain `qr.chebread.org`:
+```bash
+# Saved redirect slug
+curl -sL https://qr.chebread.org/github
+
+# Arbitrary text
+curl -sL https://qr.chebread.org/hello-world
+
+# Arbitrary URL
+curl -sL https://qr.chebread.org/https://chebread.org
+```
+
+#### Render QR on `link.chebread.org`:
 ```bash
 curl -sL https://link.chebread.org/qr/github
 ```
 
 #### Render QR for light-background terminals:
 ```bash
-curl -sL "https://link.chebread.org/qr/github?light"
+curl -sL "https://qr.chebread.org/github?light"
 # or
-curl -sL "https://link.chebread.org/qr/github?invert"
-```
-
-#### Render QR for an arbitrary URL:
-```bash
-curl -sL "https://link.chebread.org/qr/https://chebread.org"
+curl -sL "https://qr.chebread.org/github?invert"
 ```
 
 #### Render QR with safe query parameters (avoids shell & URL path issues):
 ```bash
-curl -sL "https://link.chebread.org/qr?url=https://example.com/search?q=cloudflare&lang=en"
-curl -sL "https://link.chebread.org/qr?text=WIFI:S:MyNetwork;T:WPA;P:SecretPassword;;"
+curl -sL "https://qr.chebread.org/?url=https://example.com/search?q=cloudflare&lang=en"
+curl -sL "https://qr.chebread.org/?text=WIFI:S:MyNetwork;T:WPA;P:SecretPassword;;"
 ```
 
 #### Download SVG via curl:
 ```bash
-curl -sL "https://link.chebread.org/qr/github?format=svg" -o qr-github.svg
+curl -sL "https://qr.chebread.org/github?format=svg" -o qr-github.svg
 # or using Accept header
-curl -sL -H "Accept: image/svg+xml" https://link.chebread.org/qr/github -o qr-github.svg
+curl -sL -H "Accept: image/svg+xml" https://qr.chebread.org/github -o qr-github.svg
 ```
 
 ---
 
-## 4. Web Browser Usage
+## 5. Web Browser Usage
 
 When visited from a standard web browser (Chrome, Safari, Firefox), the service returns an optimized SVG file served as a download attachment:
 
-- **Clean File Naming**: `/qr/github` triggers download of `qr-github.svg`.
-- **Sanitized Filenames**: Paths and unsafe characters are stripped into safe tokens (e.g. `/qr/https://example.com` becomes `qr-https_example.com.svg`).
-- **Unicode Support (RFC 5987)**: Multi-byte languages (such as Korean) download with their original name preserved via `filename*=UTF-8''...` (e.g. `/qr/안녕하세요` -> `qr-안녕하세요.svg`).
+- **Instant Download via `qr.chebread.org`**:
+  - `https://qr.chebread.org/github` triggers download of `qr-github.svg`.
+  - `https://qr.chebread.org/hello` triggers download of `qr-hello.svg`.
+- **Clean File Naming**: `/github` or `/qr/github` triggers download of `qr-github.svg`.
+- **Sanitized Filenames**: Paths and unsafe characters are stripped into safe tokens (e.g. `/https://example.com` becomes `qr-https_example.com.svg`).
+- **Unicode Support (RFC 5987)**: Multi-byte languages (such as Korean) download with their original name preserved via `filename*=UTF-8''...` (e.g. `/안녕하세요` -> `qr-안녕하세요.svg`).
 
 ---
 
-## 5. Development & Deployment
+## 6. Development & Deployment
 
 ### Local Development
 ```bash
@@ -137,6 +177,11 @@ pnpm test
 pnpm run deploy
 # or: cf deploy
 ```
+
+### DNS / CNAME Setup
+In Cloudflare DNS for your zone (`chebread.org`), configure CNAME records for both subdomains:
+- `link.chebread.org` -> Worker
+- `qr.chebread.org` -> Worker
 
 ---
 

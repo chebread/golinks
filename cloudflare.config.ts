@@ -11,6 +11,10 @@ export default defineConfig({
 				pattern: "link.chebread.org/*",
 				zone: "chebread.org",
 			}),
+			triggers.fetch({
+				pattern: "qr.chebread.org/*",
+				zone: "chebread.org",
+			}),
 		],
 	},
 });
