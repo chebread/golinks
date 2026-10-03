@@ -1,6 +1,6 @@
-# link-redirector
+# golinks
 
-`link-redirector` is a high-performance personal Go-links and dynamic QR code generation service built on Cloudflare Workers.
+`golinks` is a high-performance personal Go-links and dynamic QR code generation service built on Cloudflare Workers.
 
 ## Features
 
@@ -188,4 +188,3 @@ In Cloudflare DNS for your zone (`chebread.org`), configure CNAME records for bo
 ## License
 
 This project is licensed under the [Hippocratic License 3.0 (HL3.0)](LICENSE).
-

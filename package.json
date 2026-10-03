@@ -1,5 +1,5 @@
 {
-	"name": "link-redirector",
+	"name": "golinks",
 	"private": true,
 	"type": "module",
 	"scripts": {
