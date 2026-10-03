@@ -8,5 +8,9 @@ export const redirects: Record<string, string> = {
 	github: "https://github.com/chebread",
   blog: "https://chebread.org",
   email: "mailto:che@chebread.org",
-	sponsor: "https://github.com/sponsors/chebread",
+  sponsor: "https://github.com/sponsors/chebread",
+  geeknews: "https://news.hada.io/@chebread",
+  velog: "https://velog.io/@haneum",
+  stackoverflow: "https://stackoverflow.com/users/16726480/chebread",
+  orcid: "https://orcid.org/0009-0003-8673-5891",
 };
