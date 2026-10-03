@@ -2,6 +2,12 @@
 
 `golinks` is a high-performance personal Go-links and dynamic QR code generation service built on Cloudflare Workers.
 
+> [!IMPORTANT]
+> **Public by Design (Security Notice)**  
+> This service is architected as an unauthenticated, publicly accessible gateway. Any link configured on `link.chebread.org` and any QR code generated on `qr.chebread.org` can be resolved by anyone on the internet.  
+> 
+> **Never store or route confidential credentials, API keys, passwords, private tokens, Wi-Fi credentials, or sensitive documents through this service.** Only register destinations and text intended for public sharing.
+
 ## Features
 
 - **Dual Subdomain Architecture**:
