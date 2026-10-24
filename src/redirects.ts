@@ -13,5 +13,6 @@ export const redirects: Record<string, string> = {
   velog: "https://velog.io/@haneum",
   stackoverflow: "https://stackoverflow.com/users/16726480/chebread",
   orcid: "https://orcid.org/0009-0003-8673-5891",
-  linkedin: "https://www.linkedin.com/in/che-bread/"
+  linkedin: "https://www.linkedin.com/in/che-bread/",
+  resume: "https://chebread.org/about"
 };
