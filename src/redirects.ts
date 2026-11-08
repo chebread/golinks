@@ -20,11 +20,11 @@ export const redirects: Record<string, string> = {
   disquiet: "https://disquiet.io/profiles/mJtpNv",
   codeberg: "https://codeberg.org/chebread",
   okky: "https://okky.kr/users/169353",
-  gsap: "https://gsap.com/community/profile/132826-chebread/",
   discord: "https://discord.com/users/1076488742698758225",
   codeforces: "https://codeforces.com/profile/haneum",
   reddit: "https://www.reddit.com/user/Chebread/",
   wikidocs: "https://wikidocs.net/profile/info/book/29663",
+  lobste: "https://lobste.rs/~chebread",
   // 커스텀
   resume: "https://chebread.org/about",
   blog: "https://chebread.org",
