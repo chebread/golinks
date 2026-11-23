@@ -171,6 +171,16 @@ In Cloudflare DNS for your zone (`chebread.org`), configure CNAME records for bo
 
 ---
 
+## Commit Attribution Policy
+Every new commit in this repository explicitly declares its authorship using Git trailers:
+
+| Commit Trailer | Meaning |
+| :--- | :--- |
+| `Written-by: Human` | Purely human-authored code |
+| `Assisted-by: <model>` | Primarily human-authored code containing AI-generated snippets |
+| `Generated-by: <model> with human modifications` | Primarily AI-generated code modified by human |
+| `Generated-by: <model>` | Logic generated entirely by AI |
+
 ## License
 
 This project is licensed under the [Hippocratic License 3.0 (HL3.0)](LICENSE).
