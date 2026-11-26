@@ -30,7 +30,7 @@ export const redirects: Record<string, string> = {
   lobste: "https://lobste.rs/~chebread",
   // 커스텀
   resume: "https://chebread.org/about",
-  blog: "https://chebread.org/posts",
+  blog: "https://chebread.org/posts/%EC%A0%84%EC%B2%B4",
   email: "mailto:che@chebread.org",
   sponsor: "https://fairy.hada.io/@chebread",
 };
